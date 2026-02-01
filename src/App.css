@@ -1,0 +1,82 @@
+.container {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+input {
+  color: rgb(185, 185, 185);
+  user-select: none; 
+  background: transparent;
+  border: none;
+  text-align: right;
+  font-size: 6vw;
+  margin-right: 13vw;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+input:focus{
+  outline: none;
+  text-align: right;
+}
+
+h1 {
+  color: rgb(185, 185, 185);
+  user-select: none; 
+  font-size: 18vw;
+  margin:0px;
+  margin-bottom: 0;
+}
+
+.container12{
+  margin-top:20vh;
+  justify-content: center;
+  display: flex;
+  gap:0;
+  align-items:center;
+}
+
+svg {
+  color: rgb(185, 185, 185);
+  width: 9vw;
+  background: transparent;
+}
+
+button {
+  position: absolute;
+  top: 6vw;
+  right: 6vw;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:focus{
+  background-color:#404040;
+  border-radius: 5px;
+  padding-top:5px;
+}
+
+html, body, #root {
+  background-clip: padding-box; 
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0; 
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; 
+}
+
+#root {
+  border: 3px solid #c19140;
+  border-radius: 25px;
+  background-color: #242424; 
+  overflow: hidden;
+}
