@@ -1,18 +1,48 @@
 import "./App.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useState, useEffect } from "react";
+import { exit } from '@tauri-apps/plugin-process';
+import { useState, useEffect, useRef } from "react";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/plugin-notification";
 
 function App() {
   //pin button
   const [isOnTop, setIsOnTop] = useState(false);
 
   useEffect(() => {
-    console.log(isOnTop);
     getCurrentWindow().setAlwaysOnTop(isOnTop);
   }, [isOnTop]);
 
+  useEffect(() => {
+    //notification permission
+    async function setPermission() {
+      let permissionGranted = await isPermissionGranted();
+      if (!permissionGranted) {
+        const permission = await requestPermission();
+        permissionGranted = permission === "granted";
+      }
+    }
+    setPermission();
+
+    //shortcut
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape"){
+        exit();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return()=>{
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+
+  }, []);
+
   //timer
   const [userinput, setUserInput] = useState("");
+  const [ph, setPH] = useState("");
   const [hour, setHour] = useState(0);
   const [min, setMin] = useState(0);
   const [sec, setSec] = useState(0);
@@ -20,7 +50,7 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
-    if (userinput) {
+    if (userinput && !isRunning) {
       if (!userinput.includes("h")) setHour(0);
       if (!userinput.includes("m")) setMin(0);
       if (!userinput.includes("s")) setSec(0);
@@ -41,19 +71,20 @@ function App() {
   }, [userinput]);
 
   useEffect(() => {
-    setUserInput("");
     setHour(Math.floor(totalsec / 3600));
     setMin(Math.floor((totalsec % 3600) / 60));
     setSec(Math.floor(totalsec % 60));
 
     let countDown: any = null;
     if (totalsec > 0) {
+      setIsRunning(true);
       countDown = setInterval(() => {
         setTotalsec((prev) => prev - 1);
       }, 1000);
-    } else if (totalsec === 0) {
-      setUserInput("finish");
+    } else if (totalsec === 0 && isRunning) {
+      setPH("");
       setIsRunning(false);
+      sendNotification({ title: "Timer", body: "TimesUP!" });
     }
 
     return () => {
@@ -61,13 +92,20 @@ function App() {
     };
   }, [isRunning, totalsec]);
 
-  function setTimer(){
+  function setTimer() {
     setTotalsec(hour * 3600 + min * 60 + sec);
-    setIsRunning(true);
+    setUserInput("");
+    setPH("");
+  }
+
+  //click to input
+  const inputRef = useRef<HTMLInputElement>(null);
+  function handleClick() {
+    inputRef.current?.focus();
   }
 
   return (
-    <main className="container" data-tauri-drag-region>
+    <main className="container" data-tauri-drag-region onClick={handleClick}>
       <button
         className="always-on-top-toggle"
         onClick={() => setIsOnTop(!isOnTop)}
@@ -89,21 +127,34 @@ function App() {
           />
         </svg>
       </button>
-      <div className="container12">
-        <h1 id="showHour">{hour.toString().padStart(2, "0")}</h1>
-        <h1>:</h1>
-        <h1 id="showMin">{min.toString().padStart(2, "0")}</h1>
-        <h1>:</h1>
-        <h1 id="showSec">{sec.toString().padStart(2, "0")}</h1>
+      <div className="container12" data-tauri-drag-region>
+        <h1 id="showHour" data-tauri-drag-region>
+          {hour.toString().padStart(2, "0")}
+        </h1>
+        <h1 data-tauri-drag-region>:</h1>
+        <h1 id="showMin" data-tauri-drag-region>
+          {min.toString().padStart(2, "0")}
+        </h1>
+        <h1 data-tauri-drag-region>:</h1>
+        <h1 id="showSec" data-tauri-drag-region>
+          {sec.toString().padStart(2, "0")}
+        </h1>
       </div>
       <input
+        ref={inputRef}
+        data-tauri-drag-region
         type="text"
-        placeholder="..."
+        placeholder={ph}
         value={userinput}
         onChange={(e) => setUserInput(e.target.value)}
         onKeyDown={(e) => {
           if (e.key == "Enter") {
             setTimer();
+          }
+          if (e.key === "R" || e.key === "r" && isRunning) {
+            setPH("");
+            setIsRunning(false);
+            setTotalsec(0);
           }
         }}
       />
