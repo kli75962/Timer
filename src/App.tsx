@@ -1,6 +1,6 @@
 import "./App.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { exit } from '@tauri-apps/plugin-process';
+import { exit } from "@tauri-apps/plugin-process";
 import { useState, useEffect, useRef } from "react";
 import {
   isPermissionGranted,
@@ -29,15 +29,14 @@ function App() {
 
     //shortcut
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape"){
+      if (e.key === "Escape") {
         exit(0);
       }
-    }
+    };
     window.addEventListener("keydown", handleKeyDown);
-    return()=>{
+    return () => {
       window.removeEventListener("keydown", handleKeyDown);
-    }
-
+    };
   }, []);
 
   //timer
@@ -48,6 +47,7 @@ function App() {
   const [sec, setSec] = useState(0);
   const [totalsec, setTotalsec] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [TimeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
     if (userinput && !isRunning) {
@@ -66,6 +66,9 @@ function App() {
       if (userinput.includes("s")) {
         const match = userinput.match(/(\d+)s/);
         if (match) setSec(parseInt(match[1]));
+      }
+      if (userinput.includes("c") || userinput.includes("r")) {
+        setUserInput("");
       }
     }
   }, [userinput]);
@@ -97,6 +100,37 @@ function App() {
     setUserInput("");
     setPH("");
   }
+
+  function setClock() {
+    let totalsettime = hour * 3600 + min * 60 + sec;
+
+    const now = new Date();
+    const ch = now.getHours()*3600;
+    const cm = now.getMinutes()*60;
+    const cs = now.getSeconds();
+    const TotalCurrentSec = ch + cm + cs;
+    console.log(`total set time: ${totalsettime}`+`TotalCurrentSec: ${TotalCurrentSec}`);
+    if(TotalCurrentSec>totalsettime){
+      totalsettime+=totalsettime+(24*60*60);
+    }
+    setTimeLeft(totalsettime - TotalCurrentSec);
+  }
+
+  useEffect(() => {
+    let countDown: any = null;
+    if (TimeLeft > 0) {
+      countDown = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+      console.log(`TimeLeft: ${TimeLeft}`);
+    } else if (TimeLeft === 0) {
+      setPH("");
+      sendNotification({ title: "Timer", body: "TimesUP!" });
+    }
+    return () => {
+      if (countDown) clearInterval(countDown);
+    };
+  }, [TimeLeft]);
 
   //click to input
   const inputRef = useRef<HTMLInputElement>(null);
@@ -151,7 +185,10 @@ function App() {
           if (e.key == "Enter") {
             setTimer();
           }
-          if (e.key === "R" || e.key === "r" && isRunning) {
+          if (e.key === "c" || e.key === "C") {
+            setClock();
+          }
+          if (e.key === "R" || (e.key === "r" && isRunning)) {
             setPH("");
             setIsRunning(false);
             setTotalsec(0);
