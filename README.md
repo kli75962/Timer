@@ -7,4 +7,4 @@ This template should help get you started developing with Tauri, React and Types
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
 
 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_BACKEND=x11 bun tauri dev
-bun tauri build
+NO_STRIP=true bun tauri build
