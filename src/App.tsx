@@ -93,7 +93,7 @@ function App() {
     return () => {
       if (countDown) clearInterval(countDown);
     };
-  }, [isRunning, totalsec]);
+  }, [totalsec]);
 
   function setTimer() {
     setTotalsec(hour * 3600 + min * 60 + sec);
@@ -119,12 +119,17 @@ function App() {
   useEffect(() => {
     let countDown: any = null;
     if (TimeLeft > 0) {
+      setIsRunning(true);
       countDown = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
       console.log(`TimeLeft: ${TimeLeft}`);
-    } else if (TimeLeft === 0) {
+    } else if (TimeLeft === 0 && isRunning) {
       setPH("");
+      setIsRunning(false);
+      setHour(0);
+      setMin(0);
+      setSec(0);
       sendNotification({ title: "Timer", body: "TimesUP!" });
     }
     return () => {
@@ -183,15 +188,18 @@ function App() {
         onChange={(e) => setUserInput(e.target.value)}
         onKeyDown={(e) => {
           if (e.key == "Enter") {
+            setIsRunning(false);
             setTimer();
           }
           if (e.key === "c" || e.key === "C") {
+            setIsRunning(false);
             setClock();
           }
           if (e.key === "R" || (e.key === "r" && isRunning)) {
             setPH("");
             setIsRunning(false);
             setTotalsec(0);
+            setTimeLeft(0);
           }
         }}
       />
