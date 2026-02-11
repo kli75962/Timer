@@ -30,7 +30,7 @@ function App() {
     //shortcut
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape"){
-        exit();
+        exit(0);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
